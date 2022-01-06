@@ -218,11 +218,11 @@ class TH16ermostatPlugin implements AccessoryPlugin {
 
     const url = 'http://' + this.deviceIPAddress;
 
-    axios.get(url + (value === hap.Characteristic.CurrentHeatingCoolingState.HEAT ? this.deviceCmndOn : this.deviceCmndOff))
+    axios.get(url + (value === hap.Characteristic.CurrentHeatingCoolingState.ON ? this.deviceCmndOn : this.deviceCmndOff))
       .then((response) => {
         this.currentHeatingState =
           (response.data.POWER === 'ON') ?
-            hap.Characteristic.CurrentHeatingCoolingState.HEAT :
+            hap.Characteristic.CurrentHeatingCoolingState.ON :
             hap.Characteristic.CurrentHeatingCoolingState.OFF;
       }).catch((err) => {
         this.log.error('Failed to set relay state: cmd=' + this.deviceStatStatus + ' [' + err + ']');
@@ -253,7 +253,7 @@ class TH16ermostatPlugin implements AccessoryPlugin {
         await axios.get(url + this.deviceStatPower, { timeout: 3000 })
           .then((response) => {
             pwr = (response.data.POWER === 'ON') ?
-              hap.Characteristic.CurrentHeatingCoolingState.HEAT :
+              hap.Characteristic.CurrentHeatingCoolingState.ON :
               hap.Characteristic.CurrentHeatingCoolingState.OFF;
           }).catch((err) => {
             throw new Error('Failed to get power status: cmd=' + this.deviceStatPower + ' [' + err + ']');
@@ -278,10 +278,10 @@ class TH16ermostatPlugin implements AccessoryPlugin {
         }
 
         // init target state from current state
-        let targetRelayOn = (this.currentHeatingState === hap.Characteristic.CurrentHeatingCoolingState.HEAT);
+        let targetRelayOn = (this.currentHeatingState === hap.Characteristic.CurrentHeatingCoolingState.ON);
 
         switch (this.targetHeatingState) {
-          case hap.Characteristic.TargetHeatingCoolingState.AUTO:
+          case hap.Characteristic.TargetHeatingCoolingState.ON:
             {
               // AUTO mode: Compare temperatures
               if (parseFloat(this.currTemp) >= (this.targetTemp + this.deltaTemp)) {
@@ -292,9 +292,9 @@ class TH16ermostatPlugin implements AccessoryPlugin {
             }
             break;
 
-          case hap.Characteristic.CurrentHeatingCoolingState.HEAT:
-            targetRelayOn = true;
-            break;
+       //   case hap.Characteristic.CurrentHeatingCoolingState.HEAT:
+       //     targetRelayOn = true;
+       //     break;
 
           case hap.Characteristic.CurrentHeatingCoolingState.OFF:
             targetRelayOn = false;
@@ -303,7 +303,7 @@ class TH16ermostatPlugin implements AccessoryPlugin {
 
         // Change status if needed (this.currentHeatingState as boolean here)
         if (targetRelayOn && !this.currentHeatingState) {
-          this.setDevicePower(hap.Characteristic.CurrentHeatingCoolingState.HEAT);
+          this.setDevicePower(hap.Characteristic.CurrentHeatingCoolingState.ON);
         } else if (!targetRelayOn && this.currentHeatingState) {
           this.setDevicePower(hap.Characteristic.CurrentHeatingCoolingState.OFF);
         }
@@ -333,10 +333,10 @@ class TH16ermostatPlugin implements AccessoryPlugin {
     switch (state) {
       case hap.Characteristic.TargetHeatingCoolingState.OFF:
         return 'OFF';
-      case hap.Characteristic.TargetHeatingCoolingState.HEAT:
-        return 'HEAT';
-      case hap.Characteristic.TargetHeatingCoolingState.AUTO:
-        return 'AUTO';
+   //   case hap.Characteristic.TargetHeatingCoolingState.HEAT:
+   //     return 'HEAT';
+      case hap.Characteristic.TargetHeatingCoolingState.ON:
+        return 'ON';
       default:
         return 'UNKNOWN';
     }
