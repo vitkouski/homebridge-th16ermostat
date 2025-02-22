@@ -35,6 +35,7 @@ class TH16ermostatPlugin implements AccessoryPlugin {
   private targetHeatingState = hap.Characteristic.TargetHeatingCoolingState.OFF; // [0, 1, 3] only
   private pollingTimer;
   private isOffline = false;
+  private tempOffset: number = 0;
 
   // config
   private readonly name: string;
@@ -80,6 +81,8 @@ class TH16ermostatPlugin implements AccessoryPlugin {
     this.deltaTemp = config.deltaTemp as number || this.deltaTemp;
     this.stepTemp = config.StepTemp as number || this.stepTemp;
     this.tempUnits = config.tempUnits as string || this.tempUnits;
+    this.tempOffset = config.tempOffset as number || 0;
+
     // Fix config values if necessary
     //
     if (this.deltaTemp < 0.1) {
@@ -267,9 +270,11 @@ class TH16ermostatPlugin implements AccessoryPlugin {
 
         // device online
         this.isOffline = false;
-
+        // Adjust the temperature reading
+        const rawTemp = response['TMP_STAT'] as number;
+        const adjustedTemp = rawTemp - this.tempOffset;
         // state values
-        this.currTemp = response['TMP_STAT'] as string;
+        this.currTemp = adjustedTemp.toString();
         this.currRelativeHumidity = response['HUM_STAT'] as string;
         this.currentHeatingState = response['PWR_STAT'] as number;
         this.thermostatService.setCharacteristic(hap.Characteristic.CurrentTemperature, this.currTemp);
