@@ -21,6 +21,12 @@
             "type": "boolean",
             "default": true
         },
+        "tempOffset": {
+            "title": "Offset parameter to calibrate the temperature sensor.",
+            "type": "number",
+            "required": true,
+            "placeholder": 0
+        },
         "minTemp": {
             "title": "Minimum Temperature",
             "type": "number",
